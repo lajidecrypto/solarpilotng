@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en-NG">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b6b4f">
+  <title>SolarGuide Nigeria — Free Solar System Calculator</title>
+  <meta name="description" content="Free Nigerian solar calculator. Estimate your inverter, battery bank and solar panel requirements from your appliances. Compare tubular, AGM, GEL, flooded lead-acid and LiFePO4 batteries and get a panel technology recommendation.">
+  <link rel="canonical" href="https://example.com/">
+  <style>
+    :root{--bg:#f6f8f7;--card:#fff;--ink:#10221b;--muted:#61736b;--brand:#0b6b4f;--brand2:#084d3a;--line:#dfe7e3;--soft:#eaf4ef;--warn:#fff5d8;--danger:#fff0ef;--shadow:0 10px 30px rgba(15,40,30,.08);--r:18px}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.45}
+    a{color:inherit}.wrap{max-width:1080px;margin:auto;padding:18px}.top{padding:22px 0}.brand{font-weight:850;font-size:20px;color:var(--brand)} 
+    .hero{padding:20px 0 8px}.hero h1{font-size:clamp(30px,7vw,54px);line-height:1.02;margin:8px 0 12px;letter-spacing:-.04em}.hero p{font-size:17px;color:var(--muted);max-width:700px}
+    .grid{display:grid;gap:16px}.two{grid-template-columns:1.25fr .75fr}.three{grid-template-columns:repeat(3,1fr)}@media(max-width:780px){.two,.three{grid-template-columns:1fr}}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px}.card h2,.card h3{margin-top:0}.section-title{display:flex;justify-content:space-between;gap:12px;align-items:center}
+    label{font-weight:700;font-size:14px;display:block;margin:0 0 6px}.field{margin-bottom:14px} input,select{width:100%;padding:13px 12px;border:1px solid #cfdad5;border-radius:12px;background:#fff;color:var(--ink);font:inherit}
+    button{border:0;border-radius:12px;padding:12px 15px;font:inherit;font-weight:800;cursor:pointer}.primary{background:var(--brand);color:white}.secondary{background:var(--soft);color:var(--brand2)}.ghost{background:#f3f5f4;color:var(--ink)}
+    .appliance{display:grid;grid-template-columns:1.5fr .45fr .7fr .7fr auto;gap:8px;align-items:end;padding:10px 0;border-bottom:1px solid var(--line)}.appliance:last-child{border-bottom:0}
+    .appliance .field{margin:0}.remove{padding:10px 11px;background:#fff0ef;color:#a53127}
+    @media(max-width:650px){.appliance{grid-template-columns:1fr 1fr}.appliance .name{grid-column:1/-1}.appliance .remove{grid-column:2}.appliance .watt{grid-column:1}}
+    .pill{display:inline-flex;padding:5px 9px;border-radius:999px;background:var(--soft);color:var(--brand);font-size:12px;font-weight:800}.metric{padding:14px;border-radius:14px;background:#f7faf8;border:1px solid var(--line)}.metric strong{display:block;font-size:25px}.muted{color:var(--muted)}.small{font-size:12px}.result{margin-top:18px}
+    .recommend{border-left:5px solid var(--brand);background:var(--soft);padding:15px;border-radius:12px}.warn{background:var(--warn);border-color:#f1df9e}.note{background:#f4f7f6;padding:12px;border-radius:12px;color:#43564e}
+    .footer{color:var(--muted);font-size:12px;padding:30px 0 50px}.list{margin:8px 0 0;padding-left:18px}.choice{display:grid;gap:8px}.choice label{font-weight:600;background:#f7faf8;border:1px solid var(--line);padding:11px;border-radius:12px;cursor:pointer}.choice input{width:auto;margin-right:8px}
+    .hide{display:none}.bar{height:9px;background:#e5ece8;border-radius:999px;overflow:hidden}.bar>span{display:block;height:100%;background:var(--brand)}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top"><div class="brand">☀ SolarGuide Nigeria</div></header>
+
+  <section class="hero">
+    <span class="pill">Free • Mobile-first • Nigeria</span>
+    <h1>How much solar do you need?</h1>
+    <p>Add your appliances and tell us how long you want to run them. We estimate your daily energy, peak load, inverter size, battery bank and solar panels — including the battery type and panel technology that best fit your plan.</p>
+  </section>
+
+  <main class="grid two">
+    <section class="card">
+      <div class="section-title"><h2>Your appliances</h2><button class="secondary" id="addBtn">+ Add appliance</button></div>
+      <p class="muted small">Use the suggested wattage, or enter the rating from the appliance label.</p>
+      <div id="rows"></div>
+      <div class="grid three" style="margin-top:15px">
+        <div class="field"><label>Location</label><select id="location"><option>Lagos</option><option>Abuja</option><option>Kano</option><option>Port Harcourt</option><option>Ibadan</option><option>Benin City</option><option>Other Nigeria</option></select></div>
+        <div class="field"><label>Backup target (hours)</label><input id="backup" type="number" min="1" max="48" step=".5" value="8"></div>
+        <div class="field"><label>Battery preference</label><select id="battery"><option value="auto">Recommend for me</option><option value="flooded">Flooded lead-acid</option><option value="tubular">Tubular lead-acid</option><option value="agm">AGM</option><option value="gel">GEL</option><option value="lifepo4">LiFePO4 lithium</option></select></div>
+      </div>
+      <div class="grid three">
+        <div class="field"><label>Roof/ground area available (m²)</label><input id="area" type="number" min="1" value="35"></div>
+        <div class="field"><label>Panel preference</label><select id="panel"><option value="auto">Recommend for me</option><option value="topcon">N-type TOPCon monofacial</option><option value="bifacial">N-type TOPCon bifacial</option><option value="perc">Monocrystalline PERC</option><option value="poly">Polycrystalline</option><option value="thin">Thin-film</option></select></div>
+        <div class="field"><label>System use</label><select id="use"><option value="daily">Daily cycling</option><option value="backup">Mostly backup</option><option value="business">Business / heavy use</option></select></div>
+      </div>
+      <button class="primary" style="width:100%;font-size:16px" id="calc">Calculate my system</button>
+    </section>
+
+    <aside class="card">
+      <h2>What you'll get</h2>
+      <ul class="list">
+        <li>Estimated daily energy (kWh)</li>
+        <li>Peak running load and surge headroom</li>
+        <li>Recommended inverter class</li>
+        <li>Battery bank size for your chosen chemistry</li>
+        <li>Number of panels and recommended panel technology</li>
+        <li>Clear explanation of the assumptions</li>
+      </ul>
+      <div class="note" style="margin-top:15px"><strong>Planning estimate:</strong> final system design should be checked against actual appliance nameplates, inverter limits, battery datasheets, roof conditions, wiring losses and a site survey.</div>
+    </aside>
+  </main>
+
+  <section id="result" class="card result hide">
+    <div class="section-title"><div><span class="pill">Your estimate</span><h2 style="margin:7px 0 0">Recommended system</h2></div><button class="ghost" id="share">Share result</button></div>
+    <div class="grid three" style="margin-top:14px">
+      <div class="metric"><span class="muted small">Daily energy</span><strong id="kwh">—</strong><span class="small muted">estimated load</span></div>
+      <div class="metric"><span class="muted small">Peak load</span><strong id="peak">—</strong><span class="small muted">running load</span></div>
+      <div class="metric"><span class="muted small">Design load</span><strong id="design">—</strong><span class="small muted">with headroom</span></div>
+    </div>
+    <div class="grid two" style="margin-top:16px">
+      <div class="recommend"><h3>⚡ Inverter</h3><div id="inv" style="font-size:24px;font-weight:850">—</div><p id="invWhy" class="muted"></p></div>
+      <div class="recommend"><h3>🔋 Battery</h3><div id="bat" style="font-size:24px;font-weight:850">—</div><p id="batWhy" class="muted"></p></div>
+      <div class="recommend"><h3>☀ Solar array</h3><div id="pv" style="font-size:24px;font-weight:850">—</div><p id="pvWhy" class="muted"></p></div>
+      <div class="recommend"><h3>🔧 Panel technology</h3><div id="panelRec" style="font-size:20px;font-weight:850">—</div><p id="panelWhy" class="muted"></p></div>
+    </div>
+    <div class="card warn" style="margin-top:16px">
+      <h3 style="margin-top:0">Why this recommendation?</h3>
+      <div id="explain"></div>
+    </div>
+    <div class="grid two" style="margin-top:16px">
+      <div><h3>Battery alternatives</h3><div id="batteryOptions"></div></div>
+      <div><h3>Panel alternatives</h3><div id="panelOptions"></div></div>
+    </div>
+    <div class="note" style="margin-top:16px"><strong>Next step:</strong> Need an installer? The future version will let you send this exact requirement to verified installers for competing quotes.</div>
+  </section>
+
+  <footer class="footer">
+    <p><strong>SolarGuide Nigeria MVP</strong> — consumer planning tool. Battery and PV assumptions are intentionally conservative defaults and should be replaced with manufacturer-specific data as the product's database grows.</p>
+    <p>Battery chemistry affects usable capacity: lead-acid systems generally require shallower routine discharge than LiFePO4. Panel technology affects efficiency, space requirements and performance characteristics. Final compatibility must be confirmed by a qualified installer.</p>
+  </footer>
+</div>
+
+<script>
+const appliances = [
+  ["Refrigerator",150,24,0.9],["Freezer",180,12,1.0],["TV",100,6,1.0],["Standing fan",70,8,1.0],
+  ["Ceiling fan",75,8,1.0],["LED bulb",10,6,1.0],["Laptop",65,8,1.0],["Wi-Fi router",15,12,1.0],
+  ["1HP AC",900,6,2.5],["1.5HP AC",1300,6,2.8],["2HP AC",1800,6,3.0],["Washing machine",700,1,2.5],
+  ["Microwave",1200,.5,1.8],["Electric kettle",1500,.5,1.8],["Blender",500,.25,2.0],["Iron",1200,1,1.5],
+  ["Borehole pump 1HP",750,1,3.0],["Desktop computer",250,8,1.5],["Starlink",75,12,1.0],["Other",500,4,2.0]
+];
+
+const batterySpecs = {
+  flooded:{name:"Flooded lead-acid",dod:.50,eff:.82,rec:"Budget option; needs ventilation and regular maintenance.",life:"shorter-cycle option"},
+  tubular:{name:"Tubular lead-acid",dod:.50,eff:.82,rec:"Common deep-cycle lead-acid choice in Nigeria; maintenance and heat management matter.",life:"mid-life lead-acid"},
+  agm:{name:"AGM",dod:.50,eff:.85,rec:"Sealed lead-acid option with low maintenance; avoid repeated deep discharge.",life:"sealed lead-acid"},
+  gel:{name:"GEL",dod:.50,eff:.85,rec:"Sealed lead-acid option; charging must match the battery manufacturer's profile.",life:"sealed lead-acid"},
+  lifepo4:{name:"LiFePO4 lithium",dod:.80,eff:.95,rec:"High usable capacity and cycle life; requires a compatible BMS/charger/inverter.",life:"long-cycle option"}
+};
+
+const panelSpecs = {
+  topcon:{name:"N-type TOPCon monofacial",w:550,eff:.22,area:2.6,why:"High-efficiency modern choice where roof area is valuable."},
+  bifacial:{name:"N-type TOPCon bifacial",w:550,eff:.22,area:2.6,why:"Useful where the rear side can receive reflected light; roof/ground conditions matter."},
+  perc:{name:"Monocrystalline PERC",w:550,eff:.21,area:2.7,why:"Mature, widely used technology and often a good value option."},
+  poly:{name:"Polycrystalline",w:450,eff:.18,area:2.5,why:"Older technology; can still work where panel cost matters and space is available."},
+  thin:{name:"Thin-film",w:400,eff:.13,area:3.0,why:"Lower efficiency but useful for some large-area or special mounting situations."}
+};
+
+function rowTemplate(i, a=["Refrigerator",150,24,.9]){
+  return `<div class="appliance" data-i="${i}">
+    <div class="field name"><label>Appliance</label><select class="atype">${appliances.map(x=>`<option ${x[0]===a[0]?"selected":""}>${x[0]}</option>`).join("")}</select></div>
+    <div class="field"><label>Qty</label><input class="qty" type="number" min="1" step="1" value="${a[0]==="Other"?1:1}"></div>
+    <div class="field watt"><label>Watts</label><input class="watts" type="number" min="1" value="${a[1]}"></div>
+    <div class="field"><label>Hours/day</label><input class="hours" type="number" min=".1" max="24" step=".1" value="${a[2]}"></div>
+    <button class="remove" onclick="this.parentElement.remove()">Remove</button>
+  </div>`;
+}
+function addRow(a){document.getElementById("rows").insertAdjacentHTML("beforeend",rowTemplate(Date.now(),a));}
+function syncWatt(select){
+  const r=select.closest(".appliance"); const x=appliances.find(a=>a[0]===select.value); if(x) r.querySelector(".watts").value=x[1];
+}
+document.addEventListener("change",e=>{if(e.target.classList.contains("atype"))syncWatt(e.target)});
+document.getElementById("addBtn").onclick=()=>addRow(["Other",500,4,2]);
+addRow(appliances[0]); addRow(appliances[2]); addRow(appliances[3]); addRow(appliances[7]);
+
+function roundUp(n,step){return Math.ceil(n/step)*step}
+function chooseBattery(pref){
+  if(pref!=="auto") return pref;
+  const use=document.getElementById("use").value;
+  return use==="daily" ? "lifepo4" : (use==="business" ? "lifepo4" : "tubular");
+}
+function choosePanel(pref,area,pv){
+  if(pref!=="auto") return pref;
+  const requiredArea=pv/0.55*2.6; // rough area using 550W class
+  if(area<requiredArea*1.15) return "topcon";
+  if(area>=requiredArea*1.35) return "bifacial";
+  return "topcon";
+}
+function calculate(){
+  const rows=[...document.querySelectorAll(".appliance")];
+  let dailyWh=0, peak=0, surge=0;
+  rows.forEach(r=>{
+    const q=+r.querySelector(".qty").value||1,w=+r.querySelector(".watts").value||0,h=+r.querySelector(".hours").value||0;
+    dailyWh += q*w*h;
+    peak += q*w;
+    const opt=appliances.find(a=>a[0]===r.querySelector(".atype").value);
+    surge=Math.max(surge, q*w*(opt?opt[3]:1));
+  });
+  if(!dailyWh){alert("Add at least one appliance.");return}
+  const dailyKwh=dailyWh/1000;
+  const designLoad=Math.max(peak*1.25, surge*1.15)/1000;
+  const inverter=designLoad<=1.6?2:designLoad<=2.4?3:designLoad<=3.2?5:designLoad<=4.8?7.5:designLoad<=6.4?8:10;
+  const bKey=chooseBattery(document.getElementById("battery").value), b=batterySpecs[bKey];
+  const backup=+document.getElementById("backup").value||8;
+  const batteryEnergy=Math.max(dailyKwh*(backup/24), dailyKwh*0.35)/b.dod/b.eff;
+  const battKwh=roundUp(batteryEnergy,.5);
+  const systemVoltage=inverter>=5?48:24;
+  const battAh=Math.ceil((battKwh*1000)/systemVoltage);
+  const loc=document.getElementById("location").value;
+  const sun={Lagos:4.5,Abuja:5,Kano:5.5,"Port Harcourt":4.5,Ibadan:4.7,"Benin City":4.6,"Other Nigeria":4.8}[loc]||4.8;
+  const pvKw=Math.max(dailyKwh/(sun*.78), inverter*.75);
+  const pKey=choosePanel(document.getElementById("panel").value,+document.getElementById("area").value||35,pvKw);
+  const p=panelSpecs[pKey];
+  const panels=Math.ceil((pvKw*1000)/p.w);
+  const actualPv=panels*p.w/1000;
+  const areaNeeded=panels*p.area;
+  const area=+document.getElementById("area").value||35;
+  document.getElementById("result").classList.remove("hide");
+  document.getElementById("kwh").textContent=dailyKwh.toFixed(1)+" kWh";
+  document.getElementById("peak").textContent=(peak/1000).toFixed(1)+" kW";
+  document.getElementById("design").textContent=designLoad.toFixed(1)+" kW";
+  document.getElementById("inv").textContent=inverter+" kVA class";
+  document.getElementById("invWhy").textContent=`Estimated running load is ${(peak/1000).toFixed(1)} kW with startup/headroom allowance.`;
+  document.getElementById("bat").textContent=`≈ ${battKwh.toFixed(1)} kWh (${battAh}Ah @ ${systemVoltage}V)`;
+  document.getElementById("batWhy").textContent=`${b.name}: ${(b.dod*100).toFixed(0)}% routine DoD and ${(b.eff*100).toFixed(0)}% assumed round-trip efficiency.`;
+  document.getElementById("pv").textContent=`${panels} × ${p.w}W = ${actualPv.toFixed(2)} kWp`;
+  document.getElementById("pvWhy").textContent=`Using ~${sun} peak-sun-hours/day for ${loc} and a 22% system-loss/derating allowance.`;
+  document.getElementById("panelRec").textContent=p.name;
+  document.getElementById("panelWhy").textContent=`${p.why} Estimated panel area: ~${areaNeeded.toFixed(1)} m² vs your ${area} m² available.`;
+  document.getElementById("explain").innerHTML=`
+    <p>Your appliances use about <strong>${dailyKwh.toFixed(1)} kWh/day</strong> at the hours you entered. Peak running load is about <strong>${(peak/1000).toFixed(1)} kW</strong>, with additional headroom for starting loads.</p>
+    <p>For the selected <strong>${backup}h backup target</strong>, the model estimates <strong>${battKwh.toFixed(1)} kWh</strong> of battery nameplate capacity after applying the selected chemistry's assumed usable depth of discharge and efficiency.</p>
+    <p>The PV array is sized to replenish the estimated daily energy using an assumed <strong>${sun} peak-sun-hours/day</strong> for ${loc}. Actual production depends on weather, orientation, shading, temperature, soiling and equipment.</p>
+    ${areaNeeded>area?`<p><strong>Space warning:</strong> the recommended panel count needs roughly ${areaNeeded.toFixed(1)} m², more than the ${area} m² you entered. Consider higher-efficiency panels, a larger installation area, or a revised load target.</p>`:""}
+  `;
+  document.getElementById("batteryOptions").innerHTML=Object.entries(batterySpecs).map(([k,x])=>`<div class="metric" style="margin-bottom:8px"><strong style="font-size:17px">${x.name}</strong><span class="small muted">${Math.round(battKwh*x.dod/b.dod)} kWh nameplate equivalent at this model's assumptions • ${x.rec}</span></div>`).join("");
+  document.getElementById("panelOptions").innerHTML=Object.entries(panelSpecs).map(([k,x])=>{const n=Math.ceil((pvKw*1000)/x.w);return `<div class="metric" style="margin-bottom:8px"><strong style="font-size:17px">${x.name}</strong><span class="small muted">${n} panels • ${(n*x.w/1000).toFixed(2)} kWp • ~${(n*x.area).toFixed(1)} m²</span></div>`}).join("");
+  document.getElementById("result").scrollIntoView({behavior:"smooth",block:"start"});
+}
+document.getElementById("calc").onclick=calculate;
+document.getElementById("share").onclick=async()=>{
+  const text=`SolarGuide Nigeria estimate: ${document.getElementById("inv").textContent} inverter; ${document.getElementById("bat").textContent} battery; ${document.getElementById("pv").textContent} solar array; panel: ${document.getElementById("panelRec").textContent}.`;
+  if(navigator.share) await navigator.share({title:"My SolarGuide estimate",text});
+  else {await navigator.clipboard.writeText(text);alert("Result copied to clipboard.");}
+};
+</script>
+</body>
+</html>
